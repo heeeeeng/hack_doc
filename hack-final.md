@@ -71,11 +71,53 @@ Dag的图结构使得交易之间存在一种直接的连接关系。在OG中，
 比赛结束时余额最多的队伍获得胜利。
 
 
+## 开发细节
+为了方便参赛队员在短时间内接入到区块链网络，组委会封装了所有在比赛中需要/能够使用的API，并提供了三种语言（Go、Python、Java）的SDK，使得选手可以专注于对DAG网络的理解和策略的制定上，而无需在有限的时间内关注接入细节。参赛队员并不需要在本机运行全节点或开发接入代码。
 
-##开发细节
+详细的API接口如下（以Java为例）：
+### queryNonce(String address)
+返回对应账户地址的当前Nonce。在发送交易前，用户需要提供一个Nonce，以区别前后交易，避免双花。
+即，如果本次交易需要使用的Nonce为6，如果这笔交易被成功验证，则下一笔交易的Nonce为7。
+如果在同一个Sequencer中发送两笔交易，也需要遵守这个规则。
+即使交易未被Sequencer确认，只要节点收到这笔交易（进入TxPool），queryNonce的结果会被更新为该笔交易中的Nonce值。
+如果该交易最终被验证为非法，则Nonce会被回滚。
+
+### sendTx(Transaction tx)
+向区块链网络发送一笔交易。该方法会自动处理交易的签名。
+Transaction的详细内容如下：
+- parents：根据DAG和比赛的要求，该笔交易需要选择1-2笔父交易，以形成合法的DAG结构。此处填入父交易的Hash值数组。
+- from：自己的地址，可以通过account.Address()拿到。
+- to：必须为null/None/nil，比赛环境不允许私下转账。
+- nonce：该笔交易所使用的Nonce。该Nonce只能被用于一笔合法的交易上，按照交易数量递增1。
+- guarantee：对这笔交易所下的赌注/保证金。
+- value：必须为0。比赛环境不允许私下转账。
+
+### queryBalance(String address)
+返回对应账户地址的当前余额。
+
+### queryTransaction(String hash)
+查询指定Hash的某一笔交易
+
+### querySequencerByHash(String hash)
+查询指定Hash的某一笔Sequencer
+
+### querySequencerByHeight(long height)
+查询指定高度的某一笔Sequencer
+
+### queryTxsByAddress(String address)
+查询某一个地址的所有历史交易
+
+### queryTxsByHeight(long height)
+查询某一个高度上的所有交易
+
+### queryAllTipsInPool()
+查询当前在交易池中所有没有被其它交易跟随的交易
+
+### queryAllTxsInPool()
+查询当前在交易池中所有的交易
+
 
 - 每个队伍会分配一个token，用于操作sdk。
 - 部分api会有请求限制，每分钟只能请求固定数量（列出详细API）
 - 提供 GO / PYTHON / JAVA 的SDK
-- 具体开发流程示例（伪代码）
-
+- 具体开发流程示例
