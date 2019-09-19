@@ -171,9 +171,12 @@ Dag的图结构使得交易之间存在一种直接的连接关系。在OG中，
 1000 - 550 = 450
 
 最后这 450 会被加入到账户的余额中。
+
+注意此刻，一笔交易的保证金/下注已经被计算在内。
+
 ```
 
-  
+- **结算顺序：**结算从上一轮末尾的Sequencer开始。所有交易必须等待其所有的父交易进行完结算后才能被结算。
 
 #### 其他规则
 
@@ -184,15 +187,14 @@ Dag的图结构使得交易之间存在一种直接的连接关系。在OG中，
   
 
 #### 评判标准
+ 
+每个队伍分配一个private key，对应唯一的public key和address，内有一部分启动资金。
 
-每个队伍分配一个private key，内有一部分启动资金。
-
-比赛结束时余额最多的队伍获得胜利。
+**比赛结束时余额最多的队伍获得胜利。**
 
   
 
-
-## 竞赛规则
+## 竞赛须知
 
 - 各参赛队伍应当在组委会的规定技术框架内进行公平竞争。不允许以任何方式入侵、攻击、滥用组委会服务器或基础设施。
 
@@ -202,7 +204,20 @@ Dag的图结构使得交易之间存在一种直接的连接关系。在OG中，
 
 - 组委会有权禁止未预计的任何非正常比赛行为，有权禁止严重影响比赛平衡的漏洞利用行为。
 
+- 如有违反本须知的队伍，组委会将给予警告，三次警告后取消比赛资格。
   
+
+## 各种地址
+
+| Item | URL | Comments |
+|:---:|:---|:---:|
+| Dashboard     | http://47.100.122.212:30020/ ||
+| Dynamic Graph | http://47.100.122.212:30021/?w=1920&h=1080 | You may adjust w and h according to your screen.|
+| Static Graph  | http://47.100.122.212.30021/?height=11130&mode=static&token=98765467890 | Token must be provided as this API is limited to 5 times per minutes. |
+| Java SDK      | https://github.com/annchain/hack-sdk-java.git ||
+| Go SDK        | https://github.com/annchain/hack-sdk-go.git ||
+| Python SDK    | https://github.com/annchain/hack-sdk-python.git ||
+
 
 ## 开发细节-API
 
@@ -294,6 +309,10 @@ Transaction的详细内容如下：
 ### queryAllTxsInPool() 5次/分钟
 
 查询当前在交易池中所有的交易
+
+
+### queryNextSequencerInfo() 
+查询下一个Sequencer的高度和剩余的出块倒计时（毫秒）
 
   
 
